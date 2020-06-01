@@ -3,6 +3,14 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.s[ac]ss$/i,
+        use: ['style-loader', 'css-loader', 'sass-loader'],
+      },
+      {
         test: /\.html$/,
         use: [
           {
@@ -22,6 +30,10 @@ module.exports = {
         },
       },
     ],
+  },
+  devServer: {
+    host: '0.0.0.0',
+    port: 3001,
   },
   plugins: [
     new HtmlWebPackPlugin({
