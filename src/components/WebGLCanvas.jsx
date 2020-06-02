@@ -1,5 +1,5 @@
 import React from 'react'
-import GraphicsContext from '../core/graphics/graphics-context.js'
+import Graphics from '../core/gl/Graphics.js'
 import { overlayLog } from './DebugOverlay.jsx'
 // make full size canvas
 // have event listener on resize
@@ -10,7 +10,6 @@ class WebGLCanvas extends React.Component {
   constructor(props) {
     super(props)
     this._canvas = React.createRef();
-    this.context = null
   }
 
   get canvas() {
@@ -21,9 +20,7 @@ class WebGLCanvas extends React.Component {
     window.addEventListener('resize', () => { this.onResize() })
     // init webgl here
     overlayLog('initializing webgl')
-    this.context = new GraphicsContext()
-    this.context.gl = this.canvas.getContext('webgl')
-    this.context.presetup()
+    Graphics.initializeWithGL(this.canvas.getContext('webgl'))
     overlayLog("WebGL initialized")
   }
 
@@ -35,6 +32,7 @@ class WebGLCanvas extends React.Component {
     overlayLog(`resized to ${window.innerWidth} : ${window.innerHeight}`)
     // refresh state
     this.setState({ changed: true })
+    this.props.onResize()
     // also gl canvas should be updated
   }
 

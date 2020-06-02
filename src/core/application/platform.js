@@ -1,6 +1,6 @@
 // get platform data
 class PlatformInfo {
-  constructor() {
-    
-  }
+  constructor() {}
 }
+
+export default PlatformInfo
