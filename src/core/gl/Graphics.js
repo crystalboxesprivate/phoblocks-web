@@ -1,6 +1,8 @@
 import Shader from './Shader.js'
 import SolidShape from './SolidShape.js'
 import Color from './Color.js'
+import { TransformStack, Transform } from './TransformStack.js'
+import { vec2 } from 'gl-matrix'
 
 let gl = null
 let rect = new SolidShape()
@@ -15,6 +17,14 @@ class State {
 }
 
 let state = new State()
+let transformStack = new TransformStack()
+
+function getCurrentTransformStack() {
+  if (currentFbo != null) {
+    return currentFbo.transformStack
+  }
+  return transformStack
+}
 
 class Graphics {
   static init(canvas) {
@@ -23,12 +33,8 @@ class Graphics {
       console.error("The browser doesn't support webgl, quitting...")
       return
     }
-    // TODO handle resolution correctly
-    // canvas.width = canvas.clientWidth
-    // canvas.height = canvas.clientHeight
 
-    // canvas.style.width = canvas.width / window.devicePixelRatio + 'px'
-    // canvas.style.height = canvas.height / window.devicePixelRatio + 'px'
+    // TODO handle resolution correctly
 
     Graphics.setViewport()
     rect.init()
@@ -121,7 +127,7 @@ class Graphics {
     gl.enable(gl.BLEND)
     // gl.colorMask(false, false, false, true);
 
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.disable(gl.DEPTH_TEST)
   }
 
@@ -163,6 +169,56 @@ class Graphics {
   static bindShader(shader) {
     gl.useProgram(shader.program)
   }
+
+
+  static pushMatrix() {
+    const ts = getCurrentTransformStack()
+    ts.transforms.push(new Transform)
+    ts.setDirty()
+  }
+
+  static popMatrix() {
+    const ts = getCurrentTransformStack()
+    ts.setDirty()
+    return ts.transforms.pop()
+  }
+
+  static translate(x, y) {
+    x = x || 0
+    y = y || 0
+
+    const ts = getCurrentTransformStack()
+    ts.transforms[
+      ts.transforms.length - 1].translate = vec2.fromValues(x, y)
+    ts.setDirty()
+  }
+
+  static scale(x, y) {
+    x = x || 1
+    y = y || 1
+
+    const ts = getCurrentTransformStack()
+
+    ts.transforms[
+      ts.transforms.length - 1].scale = vec2.fromValues(x, y)
+    ts.setDirty()
+  }
+
+  static rotate(theta) {
+    x = x || 0
+    y = y || 0
+
+    const ts = getCurrentTransformStack()
+
+    ts.transforms[
+      ts.transforms.length - 1].rotate = theta * Math.PI / 180
+    ts.setDirty()
+  }
+
+  static get currentMatrix() {
+    return getCurrentTransformStack().matrix
+  }
+
 }
 
 export default Graphics

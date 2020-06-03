@@ -7,8 +7,6 @@ import style from './App.scss'
 
 import {
   disableBodyScroll,
-  enableBodyScroll,
-  clearAllBodyScrollLocks,
 } from 'body-scroll-lock'
 import { DebugOverlay } from './components/DebugOverlay.jsx'
 

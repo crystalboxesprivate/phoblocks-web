@@ -1,4 +1,5 @@
 import { setOverlayMessage, overlayLog } from '../components/DebugOverlay.jsx'
+import PlatformInfo from './application/platform.js'
 
 const modifiers = {}
 const mouse = {}
@@ -56,20 +57,9 @@ const configUserInput = () => {
     }
   })
 
-  // window.addEventListener('mousemove', (e) => {
-  //   if (mouse[0] === 1) {
-  //     if (modifiers.Space === 1) {
-  //       if (modifiers.ControlLeft === 1) {
-  //         overlayLog('zooming')
-  //       } else {
-  //         overlayLog('panning')
-  //       }
-  //     }
-  //   }
-  // })
-
+  
   window.addEventListener('keydown', (e) => {
-    let code = e.code
+    let code = PlatformInfo.validateKeyCode( e.code)
     if (code === 'Space' || code === 'ControlLeft' || code === 'AltLeft') {
       modifiers[code] = 1
     }
@@ -77,7 +67,7 @@ const configUserInput = () => {
   })
 
   window.addEventListener('keyup', (e) => {
-    let code = e.code
+    let code = PlatformInfo.validateKeyCode( e.code)
     if (code === 'Space' || code === 'ControlLeft' || code === 'AltLeft') {
       modifiers[code] = 0
     }

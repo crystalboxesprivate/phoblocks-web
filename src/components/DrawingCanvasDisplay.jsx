@@ -6,11 +6,8 @@ import { UserInput } from '../core/user-input.js'
 import { mat2d, vec2 } from 'gl-matrix'
 
 import Graphics from '../core/gl/Graphics.js'
-import FrameBuffer from '../core/gl/Framebuffer.js'
 
 class DrawingCanvasDisplay extends React.Component {
-  fb = new FrameBuffer()
-
   bounds = null
   mousePrevious = { x: 0, y: 0 }
   zoomIncrement = 0.01
@@ -21,14 +18,7 @@ class DrawingCanvasDisplay extends React.Component {
   }
 
   initSession() {
-    // init framebuffer
-    this.canvas.position.x = Graphics.width / 2 - this.canvas.width / 2
-    this.canvas.position.y = Graphics.height / 2 - this.canvas.height / 2
-
-    this.fb.allocate(this.canvas.width, this.canvas.height)
-    this.fb.begin()
-    Graphics.clearColor([255, 255, 255, 1.0])
-    this.fb.end()
+    this.canvas.onInit()
   }
 
   get canvas() {
@@ -44,13 +34,10 @@ class DrawingCanvasDisplay extends React.Component {
   repaint() {
     setOverlayMessage(0, `w: ${this.canvas.width}, h: ${this.canvas.height}`)
     setOverlayMessage(1, `posx: ${this.canvas.position.x}, posy: ${this.canvas.position.y} zoom: ${this.canvas.zoom}`)
-    // get context
-    // get coordinates
-    // draw with correct offset
     Graphics.setViewport()
     Graphics.clearColor([128, 128, 128, 1.0])
 
-    this.fb.draw(this.canvas.position.x, this.canvas.position.y,
+    this.canvas.framebuffer.draw(this.canvas.position.x, this.canvas.position.y,
       this.canvas.width * this.canvas.zoom, this.canvas.height * this.canvas.zoom)
   }
 
@@ -139,7 +126,6 @@ class DrawingCanvasDisplay extends React.Component {
     let [x, y] = this.getAbsoluteMouseCoords(e)
 
     if (e.touches.length > 1) {
-
       if (UserInput.gesture.active) {
         if (!this.isZooming) {
           this.isZooming = true;
@@ -153,6 +139,7 @@ class DrawingCanvasDisplay extends React.Component {
         y: this.canvasPosTouchStart.y + (y - this.touchStart.y)
       }
       this.repaint()
+      this.invalidateTool()
     } else {
       this.touchZoomStart = this.canvas.zoom
       this.isZooming = false;
@@ -161,11 +148,26 @@ class DrawingCanvasDisplay extends React.Component {
     }
   }
 
+  get tool() {
+    return this.props.state.currentTool
+  }
+
+  invalidateTool() {
+    if (this.tool.isBeingUsed) {
+      this.tool.onToolEnd()
+    }
+    this.tool.isBeingUsed = false
+  }
+
   paintTool(x, y) {
-    this.fb.begin()
     const rel = this.viewportToCanvas(x, y)
-    Graphics.drawCircle(rel.x, rel.y, 5, [0, 0, 0, 1])
-    this.fb.end()
+    if(!this.tool.isBeingUsed) {
+      this.tool.isBeingUsed = true
+      this.tool.onToolBegin(rel.x, rel.y)
+      return
+    } else {
+      this.tool.toolCallback(rel.x, rel.y)
+    }
   }
 
   handleMouseMove(e) {
@@ -198,10 +200,17 @@ class DrawingCanvasDisplay extends React.Component {
         this.paintTool(x, y)
         // overlayLog('painting')
         this.repaint()
+
+        // An early return so 
+        // current tool is not invalidated
+        return
       }
     } else {
       this.isZooming = false;
     }
+
+    this.invalidateTool()
+
   }
 
   render() {

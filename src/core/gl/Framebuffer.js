@@ -1,10 +1,12 @@
 import Graphics from './Graphics.js'
 import Image from './Image.js'
+import { TransformStack } from './TransformStack.js'
 
 class Framebuffer extends Image {
   constructor() {
     super()
     this.fb = null
+    this.transformStack = new TransformStack()
   }
 
   release() {

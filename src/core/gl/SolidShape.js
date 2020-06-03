@@ -1,5 +1,5 @@
 import Graphics from './Graphics.js'
-import { mat4 } from 'gl-matrix'
+import { mat4, mat3, mat2d } from 'gl-matrix'
 
 const defaultCircleResolution = 20
 
@@ -61,7 +61,7 @@ class SolidShape {
       verts.push(Math.sin(angle), Math.cos(angle))
       angle += step
       verts.push(Math.sin(angle), Math.cos(angle))
-        verts.push(0, 0) 
+      verts.push(0, 0)
       circle.size += 3
     }
 
@@ -76,11 +76,14 @@ class SolidShape {
 
   // it should draw the uv quad
   draw(shape, x, y, w, h, color) {
-    let mat = mat4.create()
-    mat4.ortho(mat, 0, Graphics.resolution.width,
-      Graphics.resolution.height, 0, -1, 1)
-    mat4.translate(mat, mat, [x, y, 0])
-    mat4.scale(mat, mat, [w, h, 1])
+    Graphics.pushMatrix()
+
+    Graphics.translate(x, y, 0)
+    Graphics.scale(w, h)
+
+    const mat = Graphics.currentMatrix
+
+    Graphics.popMatrix() 
 
     let isImage = typeof shape === 'object' && 'width' in shape && 'height' in shape
 
@@ -111,7 +114,7 @@ class SolidShape {
       // bind texture
       shapeData = this.shapes.circle
     }
-    
+
     let attr = gl.getAttribLocation(program, 'pos')
     gl.bindBuffer(gl.ARRAY_BUFFER, shapeData.buffer)
     gl.enableVertexAttribArray(attr)
