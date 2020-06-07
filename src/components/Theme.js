@@ -7,7 +7,7 @@ export default {
   separatorColor0: '#4A4A4A',
   sidebarWidth: 48,
 
-  headerHeight: '48px',
+  headerHeight: 48,
   font: {
     fontFamily: "Roboto",
     fontStyle: 'normal',

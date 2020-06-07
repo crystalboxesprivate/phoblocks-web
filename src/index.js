@@ -16,6 +16,7 @@ import AppState from './core/application/app-state.js'
 import Header from './components/Header.jsx'
 import Toolbar from './components/Toolbar.jsx'
 import LayersToolbar from './components/LayersToolbar.jsx'
+import LayersPanel from './components/LayersPanel.jsx'
 
 disableBodyScroll(document.body)
 
@@ -26,6 +27,7 @@ ReactDOM.render(
     <Header />
     <Toolbar />
     <LayersToolbar />
+    <LayersPanel/>
     <DrawingCanvasDisplay />
   </App>,
   document.getElementById('main')
