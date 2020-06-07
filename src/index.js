@@ -14,6 +14,8 @@ import App from './components/App.jsx'
 import DrawingCanvasDisplay from './components/DrawingCanvasDisplay.jsx'
 import AppState from './core/application/app-state.js'
 import Header from './components/Header.jsx'
+import Toolbar from './components/Toolbar.jsx'
+import LayersToolbar from './components/LayersToolbar.jsx'
 
 disableBodyScroll(document.body)
 
@@ -22,6 +24,8 @@ ReactDOM.render(
   <App state={new AppState()}>
     {/* <DebugOverlay maxMessages={12} /> */}
     <Header />
+    <Toolbar />
+    <LayersToolbar />
     <DrawingCanvasDisplay />
   </App>,
   document.getElementById('main')
