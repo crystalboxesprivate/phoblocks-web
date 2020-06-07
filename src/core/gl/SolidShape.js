@@ -1,5 +1,6 @@
 import Graphics from './Graphics.js'
 import { mat4, mat3, mat2d } from 'gl-matrix'
+import ArrayBuffer from './ArrayBuffer.js'
 
 const defaultCircleResolution = 20
 
@@ -10,8 +11,8 @@ class SolidShape {
   }
 
   shapes = {
-    rect: { size: 0, buffer: null },
-    circle: { size: 0, buffer: null, resolution: defaultCircleResolution }
+    rect: { size: 0, arrayBuffer: null },
+    circle: { size: 0, arrayBuffer: null, resolution: defaultCircleResolution }
   }
 
   SetCircleResolution(value) {
@@ -20,7 +21,7 @@ class SolidShape {
   }
 
   init() {
-    let gl = Graphics.gl
+    const gl = Graphics.gl
     this.solidShader = Graphics.createShader(
       'solid.vert.glsl', 'solid.frag.glsl')
     this.imageShader = Graphics.createShader(
@@ -29,20 +30,19 @@ class SolidShape {
       'image-uvflip.vert.glsl', 'image.frag.glsl')
 
     let program = this.solidShader.program
-    let makeBufferWithData = function (data) {
-      let buffer = gl.createBuffer()
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
-      gl.bindBuffer(gl.ARRAY_BUFFER, null)
-      return buffer
-    }
     gl.useProgram(program)
     this.shapes.rect = {
       size: 6,
-      buffer: makeBufferWithData([
-        0, 0, 0, 1, 1, 0,
-        1, 0, 0, 1, 1, 1,
-      ]),
+      arrayBuffer: function () {
+        const ab = new ArrayBuffer(gl, ArrayBuffer.Type.VERTEX)
+        ab.setData(
+          [
+            0, 0, 0, 1, 1, 0,
+            1, 0, 0, 1, 1, 1,
+          ]
+        )
+        return ab
+      }(),
     }
 
     this.updateCircle()
@@ -65,66 +65,95 @@ class SolidShape {
       circle.size += 3
     }
 
-    if (!circle.buffer) {
-      circle.buffer = gl.createBuffer()
+    if (!circle.arrayBuffer) {
+      circle.arrayBuffer = new ArrayBuffer(gl)
     }
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, circle.buffer)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW)
-    gl.bindBuffer(gl.ARRAY_BUFFER, null)
+    circle.arrayBuffer.setData(new Float32Array(verts))
   }
 
   // it should draw the uv quad
   draw(shape, x, y, w, h, color) {
     Graphics.pushMatrix()
-
     Graphics.translate(x, y, 0)
     Graphics.scale(w, h)
-
     const mat = Graphics.currentMatrix
+    Graphics.popMatrix()
 
-    Graphics.popMatrix() 
 
-    let isImage = typeof shape === 'object' && 'width' in shape && 'height' in shape
-
-    let gl = Graphics.gl
-    let program = null
-    if (isImage) {
-      // this is an fbo
-      if ('fb' in shape) {
-        program = this.imageFlipUv.program
-      } else {
-        program = this.imageShader.program
-      }
-    } else {
-      program = this.solidShader.program
-    }
-
-    gl.useProgram(program)
-    gl.uniformMatrix4fv(gl.getUniformLocation(program, 'xform'), false, mat)
-    if (isImage) {
-      gl.bindTexture(gl.TEXTURE_2D, shape.texture);
-      gl.uniform1i(gl.getUniformLocation(program, 'texture'), 0);
-    } else {
-      gl.uniform4f(gl.getUniformLocation(program, 'color'), color.r, color.g, color.b, color.a)
-    }
-
+    // get appropriate shader
     let shapeData = this.shapes.rect
+    const isImage = typeof shape === 'object' && 'width' in shape && 'height' in shape
+
+    let shader = this.solidShader
+    if (isImage) {
+      if ('fb' in shape) {
+        shader = this.imageFlipUv
+      } else {
+        shader = this.imageShader
+      }
+    }
     if (!isImage && this.shapeType.circle == shape) {
       // bind texture
       shapeData = this.shapes.circle
     }
 
-    let attr = gl.getAttribLocation(program, 'pos')
-    gl.bindBuffer(gl.ARRAY_BUFFER, shapeData.buffer)
-    gl.enableVertexAttribArray(attr)
-    gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0)
-    gl.drawArrays(gl.TRIANGLES, 0, shapeData.size)
-    gl.bindBuffer(gl.ARRAY_BUFFER, null)
+    const gl = Graphics.gl
+
+    shader.setMatrix('xform', mat)
     if (isImage) {
-      gl.bindTexture(gl.TEXTURE_2D, null);
+      shader.setTexture('texture', shape.texture)
+      shader.setFloat('alpha', Graphics.color.a)
+    } else {
+      shader.setVector4('color', [color.r, color.g, color.b, color.a])
     }
-    gl.useProgram(null)
+
+    Graphics.draw(shader, ['pos',], [{
+      size: 2,
+      glType: gl.FLOAT,
+      normalized: false,
+      stride: 0,
+      offset: 0,
+    },], 0, shapeData.size, shapeData.arrayBuffer, null)
+
+
+
+
+
+    // let program = null
+    // if (isImage) {
+    //   // this is an fbo
+    //   if ('fb' in shape) {
+    //     program = this.imageFlipUv.program
+    //   } else {
+    //     program = this.imageShader.program
+    //   }
+    // } else {
+    //   program = this.solidShader.program
+    // }
+
+    // gl.useProgram(program)
+    // gl.uniformMatrix4fv(gl.getUniformLocation(program, 'xform'), false, mat)
+    // if (isImage) {
+    //   gl.bindTexture(gl.TEXTURE_2D, shape.texture);
+    //   console.log(gl.getUniformLocation(program, 'texture'))
+    //   gl.uniform1i(gl.getUniformLocation(program, 'texture'), 0);
+    //   gl.uniform1f(gl.getUniformLocation(program, 'alpha'), Graphics.color.a)
+    // } else {
+    //   gl.uniform4f(gl.getUniformLocation(program, 'color'), color.r, color.g, color.b, color.a)
+    // }
+
+
+    // let attr = gl.getAttribLocation(program, 'pos')
+    // gl.bindBuffer(gl.ARRAY_BUFFER, shapeData.arrayBuffer.buffer)
+    // gl.enableVertexAttribArray(attr)
+    // gl.vertexAttribPointer(attr, 2, gl.FLOAT, false, 0, 0)
+    // gl.drawArrays(gl.TRIANGLES, 0, shapeData.size)
+    // gl.bindBuffer(gl.ARRAY_BUFFER, null)
+    // if (isImage) {
+    //   gl.bindTexture(gl.TEXTURE_2D, null);
+    // }
+    // gl.useProgram(null)
   }
 }
 

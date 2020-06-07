@@ -19,8 +19,7 @@ class WebGLCanvas extends React.Component {
   componentDidMount() {
     window.addEventListener('resize', () => { this.onResize() })
     // init webgl here
-    overlayLog('initializing webgl')
-    Graphics.initializeWithGL(this.canvas.getContext('webgl'))
+    Graphics.init(this.canvas)
     overlayLog("WebGL initialized")
   }
 

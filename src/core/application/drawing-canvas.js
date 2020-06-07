@@ -8,7 +8,6 @@ class DrawingCanvas {
     this.position = { x: 0, y: 0 }
     this.zoom = 1.0
     
-    
     this.framebuffer = new FrameBuffer()
   }
 

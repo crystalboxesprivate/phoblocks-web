@@ -35,8 +35,7 @@ class DrawingCanvasDisplay extends React.Component {
     setOverlayMessage(0, `w: ${this.canvas.width}, h: ${this.canvas.height}`)
     setOverlayMessage(1, `posx: ${this.canvas.position.x}, posy: ${this.canvas.position.y} zoom: ${this.canvas.zoom}`)
     Graphics.setViewport()
-    Graphics.clearColor([128, 128, 128, 1.0])
-
+    Graphics.clearColor([37, 37, 37, 1.0])
     this.canvas.framebuffer.draw(this.canvas.position.x, this.canvas.position.y,
       this.canvas.width * this.canvas.zoom, this.canvas.height * this.canvas.zoom)
   }
@@ -101,7 +100,7 @@ class DrawingCanvasDisplay extends React.Component {
     let [x, y] = this.getAbsoluteMouseCoords(e)
     this.touchStart = { x: x, y: y }
     this.canvasPosTouchStart = { x: this.canvas.position.x, y: this.canvas.position.y }
-    overlayLog(`touch start ${event.touches.length} ${this.touchStart.x} ${this.touchStart.y}`)
+    // overlayLog(`touch start ${event.touches.length} ${this.touchStart.x} ${this.touchStart.y}`)
   }
 
   updateZoom(newScale, zoomPos) {
@@ -148,6 +147,14 @@ class DrawingCanvasDisplay extends React.Component {
     }
   }
 
+  handleTouchEnd(e) {
+    this.touchZoomStart = this.canvas.zoom
+    this.isZooming = false;
+    this.invalidateTool()
+    this.paintTool(x, y)
+    this.repaint()
+  }
+
   get tool() {
     return this.props.state.currentTool
   }
@@ -161,7 +168,7 @@ class DrawingCanvasDisplay extends React.Component {
 
   paintTool(x, y) {
     const rel = this.viewportToCanvas(x, y)
-    if(!this.tool.isBeingUsed) {
+    if (!this.tool.isBeingUsed) {
       this.tool.isBeingUsed = true
       this.tool.onToolBegin(rel.x, rel.y)
       return
@@ -218,7 +225,7 @@ class DrawingCanvasDisplay extends React.Component {
       onTouchStart={e => this.handleTouchStart(e)}
       onTouchMove={(e) => this.handleTouchMove(e)}
       onTouchCancel={(e) => overlayLog("cancel fired")}
-      onTouchEnd={(e) => overlayLog("touch end")}
+      onTouchEnd={(e) => this.handleTouchEnd(e)}
       onMouseMove={(e) => this.handleMouseMove(e)}><WebGLCanvas onResize={() => this.repaint()} /></div>
   }
 }

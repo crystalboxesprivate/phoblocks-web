@@ -48,7 +48,17 @@ class DebugOverlay extends React.Component {
   }
 
   render() {
-    return <div style={{ fontFamily: 'monospace', fontSize: '8pt', color: 'white', position: 'absolute', background: 'rgba(0,0,0,0.8)', maxWidth: 400 }}>{this.getMessageLog()}</div>
+    return <div style={{
+      fontFamily: 'monospace',
+      fontSize: '8pt',
+      color: 'white',
+      position: 'absolute',
+      background: 'rgba(0,0,0,0.8)',
+      maxWidth: 400,
+      top:0,
+      left:0,
+      zIndex:99
+    }}>{this.getMessageLog()}</div>
   }
 }
 

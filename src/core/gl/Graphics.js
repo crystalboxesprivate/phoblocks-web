@@ -4,6 +4,8 @@ import Color from './Color.js'
 import { TransformStack, Transform } from './TransformStack.js'
 import { vec2 } from 'gl-matrix'
 
+import WebGLDebugUtils from 'webgl-debug'
+
 let gl = null
 let rect = new SolidShape()
 let currentFbo = null
@@ -26,9 +28,31 @@ function getCurrentTransformStack() {
   return transformStack
 }
 
+
+ function throwOnGLError(err, funcName, args) {
+    throw WebGLDebugUtils.glEnumToString(err) + " was caused by call to: " + funcName;
+  }
+ function logGLCall(functionName, args) {
+    console.log("gl." + functionName + "(" +
+      WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
+  }
+ function validateNoneOfTheArgsAreUndefined(functionName, args) {
+    for (var ii = 0; ii < args.length; ++ii) {
+      if (args[ii] === undefined) {
+        console.error("undefined passed to gl." + functionName + "(" +
+          WebGLDebugUtils.glFunctionArgsToString(functionName, args) + ")");
+      }
+    }
+  }
+ function logAndValidate(functionName, args) {
+    logGLCall(functionName, args);
+    validateNoneOfTheArgsAreUndefined(functionName, args);
+  }
+
 class Graphics {
   static init(canvas) {
     gl = canvas.getContext('webgl')
+    // gl = WebGLDebugUtils.makeDebugContext(canvas.getContext('webgl'), throwOnGLError, logAndValidate)
     if (!gl) {
       console.error("The browser doesn't support webgl, quitting...")
       return
@@ -70,8 +94,16 @@ class Graphics {
     currentFbo = value
   }
 
+  static get color() {
+    return state.color
+  }
+
   static setColor(...color) {
     state.color = Color.getFloat(color)
+  }
+
+  static get solidShape() {
+    return rect
   }
 
   static drawRect(x, y, w, h, ...color) {
@@ -125,8 +157,6 @@ class Graphics {
     // Enable transparency
     // TODO move to a separate function (if it's necessary)
     gl.enable(gl.BLEND)
-    // gl.colorMask(false, false, false, true);
-
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.disable(gl.DEPTH_TEST)
   }
@@ -163,11 +193,45 @@ class Graphics {
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       errorCallback(`Link error: ${gl.getProgramInfoLog(program)}`)
     }
-    return new Shader(program)
+    return new Shader(gl, program)
   }
 
   static bindShader(shader) {
     gl.useProgram(shader.program)
+  }
+
+  static draw(shader, inputNames, inputLayout, offset, count, vertexBuffer, indexBuffer) {
+    // bind shader
+    const program = shader.program
+    gl.useProgram(program)
+    shader.submitUniforms()
+
+    // attach index buffer
+    if (indexBuffer) {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer.buffer)
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.buffer)
+    for (let x = 0; x < inputNames.length; x++) {
+      const name = inputNames[x]
+      const desc = inputLayout[x]
+
+      const attr = gl.getAttribLocation(program, name)
+      gl.enableVertexAttribArray(attr)
+      gl.vertexAttribPointer(attr, desc.size, desc.glType, desc.normalized, desc.stride, desc.offset)
+
+    }
+
+    const primitiveType = gl.TRIANGLES;
+    if (indexBuffer) {
+      const indexType = gl.UNSIGNED_SHORT;
+      gl.drawElements(primitiveType, count, indexType, offset);
+    } else {
+      gl.drawArrays(primitiveType, offset, count)
+    }
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null)
+    gl.useProgram(null)
   }
 
 
