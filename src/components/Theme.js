@@ -1,4 +1,17 @@
+const fontFamily = 'Roboto'
+
+function getFont(size) {
+  return {
+    fontFamily,
+    fontStyle: 'normal',
+    fontWeight: 'normal',
+    fontSize: `${size}px`,
+    lineHeight: "19px",
+  }
+}
+
 export default {
+  buttonColor: '#2f2f2f',
   panelColor: '#323232',
   bgColor: '#252525',
   textBright: '#e5e5e5',
@@ -6,13 +19,8 @@ export default {
   separatorColor: '#b9b9b9',
   separatorColor0: '#4A4A4A',
   sidebarWidth: 48,
-
+  fontFamily,
   headerHeight: 48,
-  font: {
-    fontFamily: "Roboto",
-    fontStyle: 'normal',
-    fontWeight: 'normal',
-    fontSize: "16px",
-    lineHeight: "19px",
-  }
+  getFont,
+  font: getFont(16)
 }

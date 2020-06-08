@@ -1,51 +1,54 @@
 import React, { useState } from 'react'
 import Icon from './Icon.jsx'
 import Theme from './Theme.js'
-const Layer = ({ layerName }) => {
+const Layer = ({ layerName, selected }) => {
   return (
     <div style={{
-      display: 'flex'
+      display: 'flex',
+      paddingTop: 6, paddingBottom: 6,
+      alignItems: 'center',
+      ...(selected ? { backgroundColor: '#353F4C' } : {})
     }}>
-      <div></div>
-      <div>{layerName}</div>
-      <div><Icon name='eye' /></div>
+      <div style={{
+        width: 32, height: 32, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#508CE3',
+        borderRadius: 2, marginLeft: 25
+      }}>
+        <div style={{ width: 26, height: 26, backgroundColor: '#C4C4C4' }}></div>
+      </div>
+      <div style={{ ...Theme.getFont(14), color: Theme.textBright0, marginLeft: 7, flexGrow: 4 }}>{layerName}</div>
+      <div style={{ marginRight: 6 }}><Icon name='eye' /></div>
     </div>)
 }
 
-const LayersList = () => (
-  <div>
-    <h1>Layers</h1>
-    <ul>
+const LayersList = ({ height }) => (
+  <div style={{
+    height: height
+  }}>
+    <h1 style={{
+      color: Theme.textBright0,
+      paddingTop: 11,
+      paddingLeft: 15,
+      ...Theme.font
+    }}>Layers</h1>
+    <ul style={{
+      marginTop: 9,
+
+    }}>
       <li>
-        <Layer layerName="Layer1" />
+        <Layer layerName="Layer1" selected={true} />
       </li>
     </ul>
   </div>
 )
 
 const Holder = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+  <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: 12 }}>
     <svg width="30" height="4" viewBox="0 0 30 4" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M2 2H28" stroke="#6E6E6E" strokeWidth="4" strokeLinecap="round" />
     </svg>
   </div>)
 
-const CollapseIcon = (isClosed) => (
-  <svg width="11" height="7" viewBox="0 0 11 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1.5 1L5.5 5L9.5 1" stroke="#B9B9B9" strokeWidth="2" strokeLinecap="round" transform={`rotate(${isClosed ? 0 : 90})`} />
-  </svg>)
 
-const PropertiesTitle = ({ title, hasToggle, isClosed }) => {
-  if (typeof (hasToggle) !== 'boolean') {
-    hasToggle = true
-  } 
-  return (
-    <div>
-      {hasToggle ? <CollapseIcon isClosed={isClosed} /> : ''}
-      <div>{title}</div>
-    </div>
-  )
-}
 
 const Slider = ({ title, min, max, defaultValue, step, valueDisplayfunc }) => {
   min = min || 0
@@ -55,11 +58,17 @@ const Slider = ({ title, min, max, defaultValue, step, valueDisplayfunc }) => {
   valueDisplayfunc = valueDisplayfunc || (x => x)
   const [value, setValue] = useState(defaultValue)
   return (<div>
-    <div>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      marginLeft: 15,
+      marginRight: 13,
+      marginBottom: 5
+    }}>
       {title != null ? <div>{title}</div> : {}}
-      <div>{value}</div>
+      <div>{valueDisplayfunc(value)}</div>
     </div>
-    <div>
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
       <svg width="226" height="20" viewBox="0 0 226 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M0 10H80" stroke="#B9B9B9" strokeWidth="2" />
         <path d="M109 10H226" stroke="#4A4A4A" strokeWidth="2" />
@@ -69,13 +78,25 @@ const Slider = ({ title, min, max, defaultValue, step, valueDisplayfunc }) => {
   </div>)
 }
 
-const ButtonBody = ({ children }) => (<div>
+const ButtonBody = ({ children }) => (<div style={{
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginLeft: 16,
+  marginRight: 16,
+  background: Theme.buttonColor,
+  border: `1px solid ${Theme.separatorColor0}`,
+  borderRadius: 4,
+  padding: '11px 17px 11px 15px',
+  // paddingTop: 8, paddingBottom: 8, paddingLeft: 15, paddingRight: 17,
+  fontSize: 16
+}}>
   {children}
-</div>)
+</div >)
 
-const DropdownList = (title, items, selectedItem) => {
-  return (<div>
-    {title != null ? <div></div> : {}}
+const DropdownList = ({ title, items, selectedItem }) => {
+  return (<div style={{ marginTop: 14 }}>
+    {title != null ? <div style={{ marginLeft: 15, marginBottom: 9 }}>{title}</div> : {}}
     <ButtonBody>
       <div>{selectedItem}</div>
       <div>
@@ -87,20 +108,69 @@ const DropdownList = (title, items, selectedItem) => {
   </div>)
 }
 
-const Module = ({ children, title, hasToggle, isClosed }) => (
-  <div>
-    {title != null ? <PropertiesTitle title={title} hasToggle={hasToggle} isClosed={isClosed} /> : ''}
-    {children}
-  </div>
-)
+const CollapseIcon = ({ isClosed }) => (
+  <div style={{
+    transform: `rotate(${isClosed ? -90 : 0}deg)`,
+    marginRight: 8.5
+  }}>
+    <svg width="11" height="7" viewBox="0 0 11 7" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1.5 1L5.5 5L9.5 1" stroke="#B9B9B9" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  </div>)
+
+const PropertiesTitle = ({ title, hasToggle, isClosed }) => {
+  if (typeof (hasToggle) !== 'boolean') { hasToggle = true }
+  if (typeof (isClosed) !== 'boolean') { isClosed = false }
+  let marginBottomTitle = 0
+  if (hasToggle && !isClosed) {
+    marginBottomTitle = 20
+  }
+  return (
+    <div style={{ marginLeft: 15, marginBottom: marginBottomTitle, fontSize: 16, display: 'flex', alignItems: 'center' }}>
+      {hasToggle ? <CollapseIcon isClosed={isClosed} /> : ''}
+      <div>{title}</div>
+    </div>
+  )
+}
+
+const Module = ({ children, title, hasToggle, isClosed, noPaddingTop, padding, style }) => {
+  padding = padding || 20
+  let defaultStyle = { paddingBottom: padding }
+  if (style) { defaultStyle = style }
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      paddingTop: noPaddingTop ? 0 : padding,
+      borderTop: noPaddingTop ? 0 : `1px solid ${Theme.bgColor}`,
+      ...defaultStyle
+    }}>
+      {title != null ? <PropertiesTitle title={title} hasToggle={hasToggle} isClosed={isClosed} /> : ''}
+      {children}
+    </div>
+  )
+}
 
 const LayerProperties = ({ layerName }) => (
-  <div>
+  <div style={{
+    borderTop: `1px solid ${Theme.bgColor}`,
+    paddingTop: 3,
+    fontFamily: Theme.fontFamily,
+    color: Theme.textBright0
+  }}>
     <Holder />
-    <Module title='Layer Properties' hasToggle={false}>
-      <div style={{ display: 'flex' }}>
-        <div></div>
-        <div>{layerName}</div>
+    <Module title='Layer Properties' hasToggle={false} noPaddingTop={true} padding={12} style={{ paddingBottom: 0 }}>
+      <div style={{ display: 'flex', marginTop: 11, alignItems: 'center', marginLeft: 17, marginBottom: 12 }}>
+        <div style={{
+          width: 32,
+          height: 32,
+          background: '#FFFFFF',
+          border: '1px solid #909090',
+          boxSizing: 'border-box',
+          borderRadius: 2,
+          marginRight: 18
+        }}></div>
+        <div style={{ fontSize: 14 }}>{layerName}</div>
       </div>
     </Module>
     <Module title='Blending options'>
@@ -108,7 +178,7 @@ const LayerProperties = ({ layerName }) => (
       <DropdownList title='BlendMode' selectedItem='Normal' />
     </Module>
 
-    <Module>
+    <Module padding={11}>
       <ButtonBody>
         <div>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -135,12 +205,14 @@ const LayersPanel = () => {
       backgroundColor: Theme.bgColor,
     }}>
       <div style={{
+        display: 'flex',
+        flexDirection: 'column',
         marginRight: '1px',
         marginTop: '1px',
         backgroundColor: Theme.panelColor,
         height: '100%'
       }}>
-        <LayersList />
+        <LayersList height={250} />
         <LayerProperties layerName='Layer1' />
       </div>
     </div>
