@@ -9,7 +9,7 @@ const LayersToolbar = () => <Sidebar alignment='right' style={{
   justifyContent: 'space-between',
   alignItems: 'center'
 }} >
-  <ToolGroup style={{ flexBasis: 0 }}>
+  <ToolGroup >
     <ToolIcon isActive={true} activeColor="rgba(196, 196, 196, 0.5)" name="layers" />
     <ToolIcon name="layersParameters" />
     <ToolSeparator color={Theme.separatorColor0} />

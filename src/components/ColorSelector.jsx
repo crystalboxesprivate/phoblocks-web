@@ -1,67 +1,8 @@
 import React, { useState } from 'react'
-import ReactTooltip from 'react-tooltip'
-import styled from 'styled-components';
+
+import { TooltipLarge } from './Tooltips.jsx'
 
 import Theme from './Theme'
-
-const Tooltip2 = ({ children }) => {
-  // return <ReactTooltip
-  //   id={id}
-  //   getContent={dataTip => ( children
-  //     // <div>
-  //     //   <h3>This little buddy is {dataTip}</h3>
-  //     //   <p>Put mouse here</p>
-  //     // </div>
-  //   )}
-  //   effect="solid"
-  //   delayHide={500}
-  //   delayShow={500}
-  //   delayUpdate={500}
-  //   place="right"
-  //   border={true}
-  //   // type="light"
-  // />
-
-  return (
-    <div style={{
-      position: 'absolute',
-      top: 302,
-      left: Theme.sidebarWidth - 8,
-      color: Theme.textBright0,
-      display: 'flex',
-      alignItems: 'center'
-    }}>
-      <div style={{ zIndex: 5 }}>
-        <svg width="21" height="25" viewBox="0 0 21 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2.5 13L14 3.5H21V22.5H14L2.5 13Z" fill="#252525" />
-          <path d="M14 0.5V3.5L2.5 13L14 22.5V25" stroke="#555555" strokeWidth="2" />
-        </svg>
-      </div>
-      <div style={{ transform: 'translateX(-8px)' }}>
-        {children}
-      </div>
-    </div>)
-}
-
-export const ReactTooltipStyled = styled(ReactTooltip).attrs({
-  className: "custom-tooltip",
-})`
-  &.custom-tooltip::before {
-    border-right: 8px solid #555555 !important;
-  }
-  &.custom-tooltip {
-      border-radius:8px;
-      padding-top: 11px;
-      padding-left: 11.5px;
-      padding-right: 12.5px;
-      padding-bottom: 12px;
-
-      background: #252525;
-      border: 2px solid #555555;
-      z-index:5;
-      pointer-events: auto !important; 
-  }
-`;
 
 const ColorPicker = () => {
   const HueSlider = () => (
@@ -96,19 +37,7 @@ const ColorPicker = () => {
     </div>)
 
   return (
-    <div style={{
-      // paddingTop: 11,
-      // paddingLeft: 11.5,
-      // paddingRight: 12.5,
-      // paddingBottom: 12,
-      // zIndex: 2,
-      // display: 'flex',
-      // flexDirection: 'column',
-      // background: '#252525',
-      // border: '2px solid #555555',
-      // boxSizing: 'border-box',
-      // borderRadius: 8,
-    }}>
+    <div>
       <div style={{
         ...Theme.getFont(16),
         marginBottom: 11
@@ -172,7 +101,6 @@ const ColorPicker = () => {
   )
 }
 
-// margin top 15px
 const ColorSelector = ({ backgroundColor, foregroundColor, isBackgroundActive }) => {
   console.log(backgroundColor)
   const highlightedColor = '#427EE3'
@@ -213,8 +141,7 @@ const ColorSelector = ({ backgroundColor, foregroundColor, isBackgroundActive })
         </g>
       </svg>
     </div>
-
-    <ReactTooltipStyled
+    <TooltipLarge
       event='click'
       id="colorPicker"
       effect="solid"
@@ -222,7 +149,7 @@ const ColorSelector = ({ backgroundColor, foregroundColor, isBackgroundActive })
       place="right"
     >
       <ColorPicker />
-    </ReactTooltipStyled>
+    </TooltipLarge>
   </div>)
 }
 

@@ -1,4 +1,4 @@
-const fontFamily = 'Roboto'
+const fontFamily = 'Roboto, sans-serif'
 
 function getFont(size) {
   return {

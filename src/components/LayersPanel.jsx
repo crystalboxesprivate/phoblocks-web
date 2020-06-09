@@ -1,6 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Icon from './Icon.jsx'
+import Slider from './Slider.jsx'
+import Slider2 from './Slider2.jsx'
 import Theme from './Theme.js'
+import { overlayLog } from './DebugOverlay.jsx'
 const Layer = ({ layerName, selected }) => {
   return (
     <div style={{
@@ -50,33 +53,6 @@ const Holder = () => (
 
 
 
-const Slider = ({ title, min, max, defaultValue, step, valueDisplayfunc }) => {
-  min = min || 0
-  max = max || 1
-  defaultValue = defaultValue || 1
-  step = step || 0.01
-  valueDisplayfunc = valueDisplayfunc || (x => x)
-  const [value, setValue] = useState(defaultValue)
-  return (<div>
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      marginLeft: 15,
-      marginRight: 13,
-      marginBottom: 5
-    }}>
-      {title != null ? <div>{title}</div> : {}}
-      <div>{valueDisplayfunc(value)}</div>
-    </div>
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <svg width="226" height="20" viewBox="0 0 226 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M0 10H80" stroke="#B9B9B9" strokeWidth="2" />
-        <path d="M109 10H226" stroke="#4A4A4A" strokeWidth="2" />
-        <circle cx="95" cy="10" r="9" stroke="#B9B9B9" strokeWidth="2" />
-      </svg>
-    </div>
-  </div>)
-}
 
 const ButtonBody = ({ children }) => (<div style={{
   display: 'flex',
@@ -174,7 +150,7 @@ const LayerProperties = ({ layerName }) => (
       </div>
     </Module>
     <Module title='Blending options'>
-      <Slider title='Opacity' valueDisplayfunc={x => Math.floor(x * 100) + '%'} />
+      <Slider2 title='Opacity' defaultValue={0.5} valueDisplayfunc={x => Math.floor(x * 100) + '%'} />
       <DropdownList title='BlendMode' selectedItem='Normal' />
     </Module>
 

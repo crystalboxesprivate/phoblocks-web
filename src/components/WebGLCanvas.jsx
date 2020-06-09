@@ -36,13 +36,19 @@ class WebGLCanvas extends React.Component {
   }
 
   render() {
-    return <canvas ref={this._canvas} id={this.props.id}
-      width={window.innerWidth * window.devicePixelRatio}
-      height={window.innerHeight * window.devicePixelRatio}
-      style={{
-        width: window.innerWidth,
-        height: window.innerHeight
-      }} />
+    return <div style={{
+      position: 'fixed',
+      overflow: 'hidden',
+      zIndex:-1
+    }}>
+      <canvas ref={this._canvas} id={this.props.id}
+        width={window.innerWidth * window.devicePixelRatio}
+        height={window.innerHeight * window.devicePixelRatio}
+        style={{
+          width: window.innerWidth,
+          height: window.innerHeight
+        }} />
+    </div>
   }
 }
 

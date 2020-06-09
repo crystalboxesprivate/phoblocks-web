@@ -24,23 +24,30 @@ const showMods = () => {
 const configUserInput = () => {
   // handle scale
   window.addEventListener('gesturestart', (e) => {
-    // overlayLog(`scale: ${e.scale}`)
     gesture.active = true
     gesture.scale = e.scale
     gesture.rotation = e.rotation
     e.preventDefault()
   })
   window.addEventListener('gesturechange', (e) => {
-    // overlayLog(`scale: ${e.scale}`)
     gesture.scale = e.scale
     gesture.rotation = e.rotation
     e.preventDefault()
   })
   window.addEventListener('gestureend', (e) => {
-    // overlayLog(`scale: ${e.scale}`)
     gesture.active = false
     e.preventDefault()
   })
+
+  // This will prevent the double tap zoom gesture
+  var lastTouchEnd = 0;
+  document.addEventListener('touchend', function (event) {
+    var now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+      event.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
 
   window.addEventListener('mousedown', (e) => {
     if (mouseButtons[e.button] == null) {
@@ -57,9 +64,9 @@ const configUserInput = () => {
     }
   })
 
-  
+
   window.addEventListener('keydown', (e) => {
-    let code = PlatformInfo.validateKeyCode( e.code)
+    let code = PlatformInfo.validateKeyCode(e.code)
     if (code === 'Space' || code === 'ControlLeft' || code === 'AltLeft') {
       modifiers[code] = 1
     }
@@ -67,7 +74,7 @@ const configUserInput = () => {
   })
 
   window.addEventListener('keyup', (e) => {
-    let code = PlatformInfo.validateKeyCode( e.code)
+    let code = PlatformInfo.validateKeyCode(e.code)
     if (code === 'Space' || code === 'ControlLeft' || code === 'AltLeft') {
       modifiers[code] = 0
     }

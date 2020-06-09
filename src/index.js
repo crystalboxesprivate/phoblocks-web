@@ -27,8 +27,8 @@ ReactDOM.render(
     <Header />
     <Toolbar />
     <LayersToolbar />
-    <LayersPanel/>
     <DrawingCanvasDisplay />
+    <LayersPanel />
   </App>,
   document.getElementById('main')
 )
