@@ -8,11 +8,11 @@ const Toolbar = () => <Sidebar>
   <ToolGroup>
     <ToolIcon style={{ margin: '3px 0 0 2px' }} isActive={true} name='selectTool' />
     <ToolIcon name='transformTool' />
-    <ToolIcon name='lassoTool' />
-    <ToolIcon name='brushTool' />
-    <ToolIcon name='eraserTool' />
-    <ToolIcon name='paintBucketTool' />
-    <ToolIcon name='patchTool' />
+    <ToolIcon name='lassoTool' hasOptions={true} />
+    <ToolIcon name='brushTool' hasOptions={true} />
+    <ToolIcon name='eraserTool' hasOptions={true} />
+    <ToolIcon name='paintBucketTool' hasOptions={true} />
+    <ToolIcon name='patchTool' hasOptions={true} />
     <ToolIcon name='cropTool' />
     <ToolSeparator />
     <ToolIcon name='textTool' />
