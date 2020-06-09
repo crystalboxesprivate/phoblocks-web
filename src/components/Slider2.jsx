@@ -4,6 +4,9 @@ import { overlayLog } from './DebugOverlay.jsx'
 import { UserInput } from '../core/user-input.js'
 
 
+const circleRadius = 9
+const circleMargin = 4
+
 class Slider2 extends React.Component {
   constructor(props) {
     super(props)
@@ -22,18 +25,10 @@ class Slider2 extends React.Component {
 
   isDown = false
 
-  handleMouseDown(e) {
-    // console.log('down' + UserInput.mouse.left)
-    this.isDown = true
-  }
-
-  handleMouseUp(e) {
-    this.isDown = false
-  }
-
-  handleMouseMove(e, isTouch) {
-    const clientX = isTouch ? e.touches[0].pageX : e.clientX
-    const clientY = isTouch ? e.touches[0].pageY : e.clientY
+  getPosX01(clientX, clientY, clamped) {
+    if (typeof (clamped) !== 'boolean') {
+      clamped = true
+    }
 
     const bounds = this.sliderContainer.current.getBoundingClientRect()
     const [x, y] = [
@@ -41,12 +36,47 @@ class Slider2 extends React.Component {
       (clientY - bounds.top) * window.devicePixelRatio,
     ]
     let posX01 = x / (bounds.width * window.devicePixelRatio)
-    posX01 = posX01 < 0 ? 0 : posX01 > 1 ? 1 : posX01
+    if (clamped) {
+      posX01 = posX01 < 0 ? 0 : posX01 > 1 ? 1 : posX01
+    }
+    return posX01
+  }
 
+  getClientXY(e, isTouch) {
+    return [isTouch ? e.touches[0].pageX : e.clientX,
+    isTouch ? e.touches[0].pageY : e.clientY]
+  }
+
+  handleMouseDown(e, isTouch) {
+    this.isDown = true
+
+    const [clientX, clientY] = this.getClientXY(e, isTouch)
+
+    const posX01 = this.getPosX01(clientX, clientY, true)
+
+    const circlePos = this.circlePosition
+    const width = this.sliderWidth
+    // check if mouse position x  is inside the  circle
+    const posXRel = posX01 * width
+    if (posXRel > circlePos - circleRadius && posXRel < circlePos + circleRadius) {
+      overlayLog("inside")
+    }
+    else {
+      overlayLog('outside')
+    }
+    // get position 01(e)
+  }
+
+  handleMouseUp(e) {
+    this.isDown = false
+  }
+
+  handleMouseMove(e, isTouch) {
+    const [clientX, clientY] = this.getClientXY(e, isTouch)
+    const posX01 = this.getPosX01(clientX, clientY, true)
     if (this.isDown) {
       this.value = (posX01 * (this.max - this.min)) + this.min
     }
-
   }
 
   componentDidMount() {
@@ -68,9 +98,6 @@ class Slider2 extends React.Component {
     return this.state.value
   }
 
-  get sliderWidth() {
-    return this.state.width
-  }
 
   set sliderWidth(value) {
     this.state.width = value
@@ -86,20 +113,24 @@ class Slider2 extends React.Component {
     return (this.value / this.max - this.min) * 100
   }
 
-  render() {
+  get sliderWidth() {
+    return this.state.width
+  }
 
-    const circleRadius = 9
-    const circleMargin = 4
+  get circlePosition() {
 
     const boundMin = circleRadius + 1
     const boundMax = this.sliderWidth - circleRadius - 1
 
     let circlePos = this.sliderWidth * 0.01 * this.percents
-    circlePos = circlePos < boundMin ? boundMin : circlePos > boundMax ? boundMax : circlePos;
+    circlePos = circlePos < boundMin ? boundMin : circlePos > boundMax ? boundMax : circlePos
+    return circlePos
+  }
 
-
+  render() {
+    const circlePos = this.circlePosition
     return (
-      <div onMouseDown={e => this.handleMouseDown(e)} onTouchStart={e => this.handleMouseDown(e)}>
+      <div onMouseDown={e => this.handleMouseDown(e, false)} onTouchStart={e => this.handleMouseDown(e, true)}>
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
