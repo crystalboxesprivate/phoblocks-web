@@ -10,6 +10,14 @@ class EventsDef {
       ev(args)
     }
   }
+  removeListener(eventType, cb) {
+    let collection = this.callbacks[eventType]
+    if (collection == null) {
+      return
+    }
+
+    collection.splice(collection.indexOf(cb), 1)
+  }
   addListener(eventType, cb) {
     let collection = this.callbacks[eventType]
     if (collection == null) {

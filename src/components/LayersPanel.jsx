@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React from 'react'
 import Icon from './Icon.jsx'
 import Slider from './Slider.jsx'
 import Theme from './Theme.js'
 import { overlayLog } from './DebugOverlay.jsx'
+import Events from '../core/events.js'
+
 const Layer = ({ layerName, selected }) => {
   return (
     <div style={{
@@ -22,9 +24,10 @@ const Layer = ({ layerName, selected }) => {
     </div>)
 }
 
-const LayersList = ({ height }) => (
-  <div style={{
-    height: height
+const LayersList = ({ height, style }) => (
+  <div key='layers' style={{
+    height: height,
+    ...style
   }}>
     <h1 style={{
       color: Theme.textBright0,
@@ -40,18 +43,9 @@ const LayersList = ({ height }) => (
         <Layer layerName="Layer1" selected={true} />
       </li>
     </ul>
+
   </div>
 )
-
-const Holder = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: 12 }}>
-    <svg width="30" height="4" viewBox="0 0 30 4" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M2 2H28" stroke="#6E6E6E" strokeWidth="4" strokeLinecap="round" />
-    </svg>
-  </div>)
-
-
-
 
 const ButtonBody = ({ children }) => (<div style={{
   display: 'flex',
@@ -63,7 +57,6 @@ const ButtonBody = ({ children }) => (<div style={{
   border: `1px solid ${Theme.separatorColor0}`,
   borderRadius: 4,
   padding: '11px 17px 11px 15px',
-  // paddingTop: 8, paddingBottom: 8, paddingLeft: 15, paddingRight: 17,
   fontSize: 16
 }}>
   {children}
@@ -126,14 +119,13 @@ const Module = ({ children, title, hasToggle, isClosed, noPaddingTop, padding, s
   )
 }
 
-const LayerProperties = ({ layerName }) => (
+const LayerProperties = ({ layerName, style }) => (
   <div style={{
-    borderTop: `1px solid ${Theme.bgColor}`,
-    paddingTop: 3,
     fontFamily: Theme.fontFamily,
-    color: Theme.textBright0
+    color: Theme.textBright0,
+    ...style
   }}>
-    <Holder />
+
     <Module title='Layer Properties' hasToggle={false} noPaddingTop={true} padding={12} style={{ paddingBottom: 0 }}>
       <div style={{ display: 'flex', marginTop: 11, alignItems: 'center', marginLeft: 17, marginBottom: 12 }}>
         <div style={{
@@ -169,29 +161,200 @@ const LayerProperties = ({ layerName }) => (
   </div>
 )
 
-const LayersPanel = () => {
-  return (
-    <div style={{
-      position: 'absolute',
-      width: '256px',
-      right: `${(Theme.sidebarWidth)}px`,
-      top: `${Theme.headerHeight}px`,
-      height: '100%',
-      backgroundColor: Theme.bgColor,
-    }}>
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        marginRight: '1px',
-        marginTop: '1px',
-        backgroundColor: Theme.panelColor,
-        height: '100%'
-      }}>
-        <LayersList height={250} />
-        <LayerProperties layerName='Layer1' />
-      </div>
-    </div>
-  )
+class Draggable extends React.Component {
+  constructor(props) {
+    super(props)
+    this.region = React.createRef()
+
+  }
+  componentDidMount() {
+    document.addEventListener('mouseup', e => this.handleMouseUp(e), true)
+    document.addEventListener('mousemove', e => this.handleMouseMove(e), true)
+    document.addEventListener('mousedown', e => this.handleMouseDown(e), true)
+
+    Events.addListener('touchend', e => this.handleMouseUp(e, true))
+    Events.addListener('touchmove', e => this.handleMouseMove(e, true))
+    Events.addListener('touchstart', e => this.handleMouseDown(e, true))
+
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('mouseup', e => this.handleMouseUp(e), true)
+    document.removeEventListener('mousemove', e => this.handleMouseMove(e), true)
+    document.removeEventListener('mousedown', e => this.handleMouseDown(e), true)
+
+    Events.removeListener('touchend', e => this.handleMouseUp(e, true))
+    Events.removeListener('touchmove', e => this.handleMouseMove(e, true))
+    Events.removeListener('touchstart', e => this.handleMouseDown(e, true))
+  }
+
+  x = 0
+  y = 0
+
+  handleMouseUp(e, isTouch) {
+    if (!this.isDown) {
+      return
+    }
+
+    if (this.props.onDragUp != null) {
+      if (isTouch) {
+        e.clientX = this.x
+        e.clientY = this.y
+      }
+      this.props.onDragUp(e)
+    }
+    this.isDown = false
+
+  }
+
+
+  handleMouseMove(e, isTouch) {
+    if (this.props.onDragMove) {
+      if (isTouch) {
+        e.clientX = e.touches[0].pageX
+        e.clientY = e.touches[0].pageY
+        this.x = e.clientX
+        this.y = e.clientY
+      }
+      this.props.onDragMove(e)
+    }
+  }
+
+
+  handleMouseDown(e, isTouch) {
+    if (this.props.onDragDown) {
+      if (isTouch) {
+        e.clientX = e.touches[0].pageX
+        e.clientY = e.touches[0].pageY
+        this.x = e.clientX
+        this.y = e.clientY
+      }
+
+      const bounds = this.region.current.getBoundingClientRect()
+      if (this.props.expand) {
+        const e = this.props.expand
+        bounds.y -= e[0]
+        bounds.height += e[0]
+
+        bounds.width += e[1]
+        bounds.height += e[2]
+        bounds.x -= e[3]
+        bounds.width += e[3]
+      }
+
+      if (e.clientX >= bounds.x && e.clientX < bounds.x + bounds.width &&
+        e.clientY >= bounds.y && e.clientY < bounds.y + bounds.height) {
+        this.isDown = true
+        this.props.onDragDown(e)
+      }
+    }
+  }
+
+  render() {
+    return (<div ref={this.region}
+      style={{ ...this.props.style }}>
+      {this.props.children}
+    </div>)
+  }
 }
 
+class LayersPanel extends React.Component {
+  constructor(props) {
+    super(props)
+    this.holder = React.createRef()
+
+    this.divisor = 0.5
+    this.state = { topHeight: 100, bottomHeight: 100 }
+  }
+
+  get totalHeight() {
+    const holderBounds = this.holder.current.getBoundingClientRect()
+    const parentBounds = this.holder.current.parentNode.getBoundingClientRect()
+    return parentBounds.height - holderBounds.height
+  }
+  recalculate() {
+    // get height of the holder
+    const totalHeight = this.totalHeight
+    this.setState({
+      topHeight: totalHeight * this.divisor,
+      bottomHeight: totalHeight * (1.0 - this.divisor)
+    })
+  }
+
+  componentDidMount() {
+    this.recalculate()
+  }
+
+  startY = 0
+  isDown = false
+
+  handleMouseDown(e) {
+    this.isDown = true
+  }
+
+  handleMouseMove(e) {
+    if (!this.isDown) {
+      return
+    }
+    const bound = this.holder.current.parentNode.getBoundingClientRect()
+    const currY01 = (e.clientY - bound.y) / bound.height
+    this.divisor = currY01
+    if (this.divisor < 0.005) {
+      this.divisor = 0
+    } else if (this.divisor > 0.92) {
+      this.divisor = .92
+    }
+    this.recalculate()
+  }
+
+  handleMouseUp(e) {
+    this.isDown = false
+  }
+
+  render() {
+    return (
+      <div style={{
+        position: 'absolute',
+        width: '256px',
+        right: `${(Theme.sidebarWidth)}px`,
+        top: `${Theme.headerHeight}px`,
+        height: '100%',
+        backgroundColor: Theme.bgColor,
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          marginRight: '1px',
+          marginTop: '1px',
+          backgroundColor: Theme.panelColor,
+          height: '100%'
+        }}>
+          <LayersList height={this.state.topHeight} />
+          <div ref={this.holder} key='holder' style={{
+            backgroundColor: Theme.panelColor,
+            borderTop: `1px solid ${Theme.bgColor}`,
+            marginTop:-1
+          }}>
+            <Draggable expand={[30, 0, 30, 0]}
+              onDragDown={(e) => this.handleMouseDown(e)}
+              onDragMove={(e) => this.handleMouseMove(e)}
+              onDragUp={(e) => this.handleMouseUp(e)}
+              style={{
+                paddingTop: 3,
+                display: 'flex', marginTop: 0, justifyContent: 'center', width: '100%', marginBottom: 12
+              }}>
+              <svg width="30" height="4" viewBox="0 0 30 4" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 2H28" stroke="#6E6E6E" strokeWidth="4" strokeLinecap="round" />
+              </svg>
+            </Draggable>
+          </div>
+          <LayerProperties layerName='Layer1' style={{
+            backgroundColor: Theme.panelColor,
+            overflow: 'hidden', height: this.state.bottomHeight
+          }} />
+        </div>
+      </div >
+    )
+  }
+}
 export default LayersPanel

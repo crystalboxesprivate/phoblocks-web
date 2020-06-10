@@ -14,11 +14,6 @@ const gesture = {
 const mouseButtons = ['left', 'middle', 'right']
 
 const showMods = () => {
-  // overlayLog(
-  //   `Modifier Keys: ${Object.entries(modifiers)
-  //     .filter(([_, v]) => v === 1)
-  //     .map((x) => x[0])}`
-  // )
 }
 
 const configUserInput = () => {

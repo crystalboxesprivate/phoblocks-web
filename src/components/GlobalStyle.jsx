@@ -8,7 +8,4 @@ export default createGlobalStyle`
     touch-action: manipulation;
     user-zoom:fixed;
   }
-  * {
-    touch-action: manipulation;
-  }
 `;

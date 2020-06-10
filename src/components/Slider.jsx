@@ -2,10 +2,11 @@
 import React from 'react'
 import { overlayLog } from './DebugOverlay.jsx'
 import { Animation, map } from './Animation'
+import Events from '../core/events.js'
 
 const circleRadius = 9
 const circleMargin = 4
-
+const sliderDelay = 100
 
 class Slider extends React.Component {
   constructor(props) {
@@ -24,12 +25,15 @@ class Slider extends React.Component {
     this.sliderAnim = new Animation()
 
     this.state = {
+      isDown: false,
       value: this.defaultValue,
       width: 0,
     }
   }
 
   isDown = false
+  lastX = 0
+  lastY = 0
 
   isInsideCircle(posX01) {
     const circlePos = this.circlePosition
@@ -40,6 +44,8 @@ class Slider extends React.Component {
 
   handleMouseDown(e, isTouch) {
     this.isDown = true
+
+
     const [clientX, clientY] = this.getClientXY(e, isTouch)
     const posX01 = this.getPosX01(clientX, clientY, true)
     const targetVal = this.getValueFromCursor(posX01)
@@ -48,17 +54,19 @@ class Slider extends React.Component {
       this.value = targetVal
     }
     else {
-      this.sliderAnim.play(this.value, targetVal, 0, 100, () => this.forceUpdate())
+      this.sliderAnim.play(this.value, targetVal, 0, sliderDelay, () => this.forceUpdate())
     }
     // change circle animation
     this.circleAnim.play(0, 1, 0, 100, () => this.forceUpdate())
+
   }
 
   handleMouseUp(e, isTouch) {
     if (this.isDown) {
       this.circleAnim.play(1, 0, 0, 100, () => this.forceUpdate())
 
-      const [clientX, clientY] = this.getClientXY(e, isTouch)
+      const [clientX, clientY] = [isTouch ? this.lastX : e.clientX,
+      isTouch ? this.lastY : e.clientY]
       const posX01 = this.getPosX01(clientX, clientY, true)
       const targetVal = this.getValueFromCursor(posX01)
       if (this.sliderAnim.active) {
@@ -73,8 +81,11 @@ class Slider extends React.Component {
 
 
   getClientXY(e, isTouch) {
-    return [isTouch ? e.touches[0].pageX : e.clientX,
+    const pos = [isTouch ? e.touches[0].pageX : e.clientX,
     isTouch ? e.touches[0].pageY : e.clientY]
+    this.lastX = pos[0]
+    this.lastY = pos[1]
+    return pos
   }
 
   getValueFromCursor(posX01) {
@@ -105,12 +116,15 @@ class Slider extends React.Component {
     }
   }
 
-  get percents() {
-    let val = this.value
+  get displayValue() {
     if (this.sliderAnim.active) {
-      val = this.sliderAnim.t
+      return this.sliderAnim.t
     }
-    return (val / this.max - this.min) * 100
+    return this.value
+  }
+
+  get percents() {
+    return (this.displayValue / this.max - this.min) * 100
   }
 
   componentDidUpdate() {
@@ -124,8 +138,9 @@ class Slider extends React.Component {
     document.addEventListener('mouseup', e => this.handleMouseUp(e), true)
     document.addEventListener('mousemove', e => this.handleMouseMove(e), true)
 
-    document.addEventListener('touchend', e => this.handleMouseUp(e, true), true)
-    document.addEventListener('touchmove', e => this.handleMouseMove(e, true), false)
+    Events.addListener('touchend', e => this.handleMouseUp(e, true))
+    Events.addListener('touchmove', e => this.handleMouseMove(e, true))
+
     this.sliderWidth = this.sliderContainer.current.getBoundingClientRect().width
   }
 
@@ -133,8 +148,8 @@ class Slider extends React.Component {
     document.removeEventListener('mouseup', e => this.handleMouseUp(e), true)
     document.removeEventListener('mousemove', e => this.handleMouseMove(e), true)
 
-    document.removeEventListener('touchend', e => this.handleMouseUp(e, true), true)
-    document.removeEventListener('touchmove', e => this.handleMouseMove(e, true), false)
+    Events.removeListener('touchend', e => this.handleMouseUp(e, true))
+    Events.removeListener('touchmove', e => this.handleMouseMove(e, true))
   }
 
   get value() {
@@ -176,7 +191,7 @@ class Slider extends React.Component {
         }} ref={this.sliderContainer}
         >
           {this.title != null ? <div>{this.title}</div> : {}}
-          <div>{this.valueDisplayfunc(this.value)}</div>
+          <div>{this.valueDisplayfunc(this.displayValue)}</div>
         </div>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <svg width={this.sliderWidth} height="20" viewBox={`0 0 ${this.sliderWidth} 20`} fill="none" xmlns="http://www.w3.org/2000/svg">
