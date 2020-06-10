@@ -1,136 +1,198 @@
-import React, { useState, useEffect, useRef } from 'react'
+
+import React from 'react'
 import { overlayLog } from './DebugOverlay.jsx'
-import Theme from './Theme'
+import { Animation, map } from './Animation'
 
-import { Range, getTrackBackground } from 'react-range';
-import { cpus } from 'os';
-
-
-
-class SuperSimple extends React.Component {
-  state = { values: [50] };
-  render() {
-    return (
-      <Range
-        step={0.1}
-        min={0}
-        max={100}
-        values={this.state.values}
-        onChange={values => this.setState({ values })}
-        renderTrack={({ props, children }) => (
-          <div
-            {...props}
-            style={{
-              ...props.style,
-              height: '2px',
-              width: '100%',
-              backgroundImage: getTrackBackground({
-                values: this.state.values,
-                colors: ["#B9B9B9", "#4A4A4A"],
-                min: 0,
-                max: 100
-              })
-            }}
-          >
-            {children}
-          </div>
-        )}
-        renderThumb={({ props }) => (
-          <div key='d' style={{
-
-            ...props.style,
-            display: 'flex'
-          }}>
-            <div style={{ width: 4, backgroundColor: Theme.panelColor }} key='a'></div>
-            <div key='b'
-              {...props}
-              style={{
-
-                width: 20, height: 20,
-                border: '2px solid #B9B9B9',
-                boxSizing: 'border-box',
-                borderRadius: '50%',
-                outline: 'none',
-                backgroundColor: Theme.panelColor
-
-                // height: '42px',
-                // width: '42px',
-                // backgroundColor: '#999'
-              }}
-            />
-            <div key='c' style={{ width: 4, backgroundColor: Theme.panelColor }}></div>
-          </div>
-        )}
-      />
-    );
-  }
-}
+const circleRadius = 9
+const circleMargin = 4
 
 
-const Slider2 = ({ title, min, max, defaultValue, step, valueDisplayfunc }) => {
-  // parameters
-  min = min || 0
-  max = max || 1
-  defaultValue = defaultValue || 1
-  step = step || 0.01
-  valueDisplayfunc = valueDisplayfunc || (x => x)
-  const getPercent = () => (value / max - min) * 100
+class Slider extends React.Component {
+  constructor(props) {
+    super(props)
 
-  // state functions
-  const [value, setValue] = useState(defaultValue)
-  const sliderEl = useRef(null)
-  const [isDown, setIsDown] = useState(false)
-  let isDownIm = false
+    this.sliderContainer = React.createRef();
 
+    this.title = props.title
+    this.min = props.min || 0
+    this.max = props.max || 1
+    this.defaultValue = props.defaultValue || 1
+    this.step = props.step || 0.01
+    this.valueDisplayfunc = props.valueDisplayfunc || (x => x)
 
-  const handleMouseUp = (e) => {
-    if (isDownIm) {
-      overlayLog('up')
-      isDownIm = false
-      setIsDown(false)
+    this.circleAnim = new Animation()
+    this.sliderAnim = new Animation()
+
+    this.state = {
+      value: this.defaultValue,
+      width: 0,
     }
   }
-  useEffect(() => {
-    document.addEventListener('mouseup', handleMouseUp)
-    return () => {
-      document.removeEventListener('mouseup', handleMouseUp, true);
-    };
-  });
-  return (<div>
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      marginLeft: 15,
-      marginRight: 13,
-      marginBottom: 5
-    }}>
-      {title != null ? <div>{title}</div> : {}}
-      <div>{valueDisplayfunc(value)}</div>
-    </div>
-    <div ref={sliderEl} style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      marginLeft: 15,
-      marginRight: 13,
-    }}>
-      <div style={{ borderTop: '2px solid #B9B9B9', height: 0, width: `${getPercent()}%`, flexGrow: 1 }}></div>
-      <div style={{ width: 4, flexShrink: 1 }}></div>
-      <div
-        onMouseDown={() => { overlayLog("down"); setIsDown(true); isDownIm = true }}
-        style={{
-          width: 20, height: 20,
-          border: '2px solid #B9B9B9',
-          boxSizing: 'border-box',
-          borderRadius: '50%'
-        }}></div>
-      <div style={{ width: 4, flexShrink: 1 }}></div>
-      <div style={{ borderTop: '2px solid #4A4A4A', height: 0, width: `${100 - getPercent()}%`, flexGrow: 1 }}></div>
-    </div>
-    {/*  */}
-  </div>)
-}
 
-const Slider = ({ title, min, max, defaultValue, step, valueDisplayfunc }) => {
-  return <div style={{ display: 'flex', marginLeft: 10, marginRight: 10 }}><SuperSimple /></div>
+  isDown = false
+
+  isInsideCircle(posX01) {
+    const circlePos = this.circlePosition
+    const width = this.sliderWidth
+    const posXRel = posX01 * width
+    return posXRel > circlePos - circleRadius && posXRel < circlePos + circleRadius
+  }
+
+  handleMouseDown(e, isTouch) {
+    this.isDown = true
+    const [clientX, clientY] = this.getClientXY(e, isTouch)
+    const posX01 = this.getPosX01(clientX, clientY, true)
+    const targetVal = this.getValueFromCursor(posX01)
+    if (this.isInsideCircle(posX01)) {
+      this.sliderAnim.active = false
+      this.value = targetVal
+    }
+    else {
+      this.sliderAnim.play(this.value, targetVal, 0, 100, () => this.forceUpdate())
+    }
+    // change circle animation
+    this.circleAnim.play(0, 1, 0, 100, () => this.forceUpdate())
+  }
+
+  handleMouseUp(e, isTouch) {
+    if (this.isDown) {
+      this.circleAnim.play(1, 0, 0, 100, () => this.forceUpdate())
+
+      const [clientX, clientY] = this.getClientXY(e, isTouch)
+      const posX01 = this.getPosX01(clientX, clientY, true)
+      const targetVal = this.getValueFromCursor(posX01)
+      if (this.sliderAnim.active) {
+        this.value = this.sliderAnim.t
+        this.sliderAnim.active = false
+      } else {
+        this.value = targetVal
+      }
+    }
+    this.isDown = false
+  }
+
+
+  getClientXY(e, isTouch) {
+    return [isTouch ? e.touches[0].pageX : e.clientX,
+    isTouch ? e.touches[0].pageY : e.clientY]
+  }
+
+  getValueFromCursor(posX01) {
+    return (posX01 * (this.max - this.min)) + this.min
+  }
+
+  getPosX01(clientX, clientY) {
+    const bounds = this.sliderContainer.current.getBoundingClientRect()
+    const [x, y] = [
+      (clientX - bounds.left) * window.devicePixelRatio,
+      (clientY - bounds.top) * window.devicePixelRatio,
+    ]
+    let posX01 = x / (bounds.width * window.devicePixelRatio)
+    posX01 = posX01 < 0 ? 0 : posX01 > 1 ? 1 : posX01
+    return posX01
+  }
+
+
+  handleMouseMove(e, isTouch) {
+    if (this.isDown) {
+      const [clientX, clientY] = this.getClientXY(e, isTouch)
+      const posX01 = this.getPosX01(clientX, clientY)
+      const targetVal = this.getValueFromCursor(posX01)
+      if (this.sliderAnim.active) {
+        this.sliderAnim.end = targetVal
+      }
+      this.value = targetVal
+    }
+  }
+
+  get percents() {
+    let val = this.value
+    if (this.sliderAnim.active) {
+      val = this.sliderAnim.t
+    }
+    return (val / this.max - this.min) * 100
+  }
+
+  componentDidUpdate() {
+
+    if (this.sliderAnim.isFinished()) {
+      this.value = this.sliderAnim.t
+    }
+  }
+
+  componentDidMount() {
+    document.addEventListener('mouseup', e => this.handleMouseUp(e), true)
+    document.addEventListener('mousemove', e => this.handleMouseMove(e), true)
+
+    document.addEventListener('touchend', e => this.handleMouseUp(e, true), true)
+    document.addEventListener('touchmove', e => this.handleMouseMove(e, true), false)
+    this.sliderWidth = this.sliderContainer.current.getBoundingClientRect().width
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('mouseup', e => this.handleMouseUp(e), true)
+    document.removeEventListener('mousemove', e => this.handleMouseMove(e), true)
+
+    document.removeEventListener('touchend', e => this.handleMouseUp(e, true), true)
+    document.removeEventListener('touchmove', e => this.handleMouseMove(e, true), false)
+  }
+
+  get value() {
+    return this.state.value
+  }
+
+  get sliderWidth() {
+    return this.state.width
+  }
+
+  set sliderWidth(value) {
+    this.setState({ width: value })
+  }
+
+  set value(value) {
+    this.setState({ value: value })
+  }
+
+
+  get circlePosition() {
+    const boundMin = circleRadius + 1
+    const boundMax = this.sliderWidth - circleRadius - 1
+
+    let circlePos = this.sliderWidth * 0.01 * this.percents
+    circlePos = circlePos < boundMin ? boundMin : circlePos > boundMax ? boundMax : circlePos
+    return circlePos
+  }
+
+  render() {
+    const circlePos = this.circlePosition
+    return (
+      <div onMouseDown={e => this.handleMouseDown(e)} onTouchStart={e => this.handleMouseDown(e, true)}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginLeft: 15,
+          marginRight: 13,
+          marginBottom: 5
+        }} ref={this.sliderContainer}
+        >
+          {this.title != null ? <div>{this.title}</div> : {}}
+          <div>{this.valueDisplayfunc(this.value)}</div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <svg width={this.sliderWidth} height="20" viewBox={`0 0 ${this.sliderWidth} 20`} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d={`M0 10H${circlePos - circleMargin - circleRadius}`} stroke="#B9B9B9" strokeWidth="2" />
+            <path d={`M${circlePos + circleRadius + circleMargin} 10H${this.sliderWidth}`} stroke="#4A4A4A" strokeWidth="2" />
+
+
+            <circle cx={circlePos} cy="10" r={circleRadius} fill="#B9B9B9" />
+            <circle cx={circlePos} cy="10" r={map(this.circleAnim.t, 0, 1, circleRadius - 2, circleRadius - 7)} fill="#323232" />
+
+
+          </svg>
+        </div>
+      </div>
+    )
+  }
 }
 
 export default Slider

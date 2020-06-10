@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Icon from './Icon.jsx'
 import Slider from './Slider.jsx'
-import Slider2 from './Slider2.jsx'
 import Theme from './Theme.js'
 import { overlayLog } from './DebugOverlay.jsx'
 const Layer = ({ layerName, selected }) => {
@@ -150,7 +149,7 @@ const LayerProperties = ({ layerName }) => (
       </div>
     </Module>
     <Module title='Blending options'>
-      <Slider2 title='Opacity' defaultValue={0.5} valueDisplayfunc={x => Math.floor(x * 100) + '%'} />
+      <Slider title='Opacity' defaultValue={0.5} valueDisplayfunc={x => Math.floor(x * 100) + '%'} />
       <DropdownList title='BlendMode' selectedItem='Normal' />
     </Module>
 
