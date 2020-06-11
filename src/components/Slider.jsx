@@ -2,7 +2,7 @@
 import React from 'react'
 import { overlayLog } from './DebugOverlay.jsx'
 import { Animation, map } from './Animation'
-import Events from '../core/events.js'
+import { Events } from '../core/events.js'
 
 const circleRadius = 9
 const circleMargin = 4

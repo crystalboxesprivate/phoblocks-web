@@ -1,6 +1,6 @@
 import React from 'react'
 import { overlayLog } from './DebugOverlay.jsx'
-import Events from '../core/events.js'
+import { Events } from '../core/events.js'
 
 class App extends React.Component {
   get childComps() {

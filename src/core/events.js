@@ -30,5 +30,10 @@ class EventsDef {
   }
 }
 
+const EventType = {
+  LayerAdded: 'LayerAdded',
+  LayerHierarchyChanged: 'LayerHierarchyChanged',
+}
+
 const Events = new EventsDef()
-export default Events
+export { Events, EventType }

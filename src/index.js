@@ -14,6 +14,7 @@ import AppState from './core/application/app-state.js'
 import Header from './components/Header.jsx'
 import Toolbar from './components/Toolbar.jsx'
 import LayersToolbar from './components/LayersToolbar.jsx'
+import LayersThumbnails from './components/LayersThumbnails.jsx'
 import LayersPanel from './components/LayersPanel.jsx'
 import GlobalStyle from './components/GlobalStyle.jsx'
 
@@ -27,8 +28,9 @@ ReactDOM.render(
     <Header />
     <Toolbar />
     <LayersToolbar />
-    <DrawingCanvasDisplay />
+    {/* <LayersThumbnails /> */}
     <LayersPanel />
+    <DrawingCanvasDisplay />
   </App>,
   document.getElementById('main')
 )

@@ -1,5 +1,5 @@
 import React from 'react'
-import Events from '../core/events'
+import { Events } from '../core/events'
 
 let formatTime = x => x.getHours() + ":" + x.getMinutes() + ":" + x.getSeconds() + ':' + x.getMilliseconds()
 
@@ -55,15 +55,17 @@ class DebugOverlay extends React.Component {
       position: 'absolute',
       background: 'rgba(0,0,0,0.8)',
       maxWidth: 400,
-      top:0,
-      left:0,
-      zIndex:99
+      top: 0,
+      left: 0,
+      zIndex: 99
     }}>{this.getMessageLog()}</div>
   }
 }
 
 const overlayLog = msg => Events.invoke('debugoverlaylog', msg)
+const undoableOperationLog = msg => Events.invoke('debugoverlaylog', `W: Undoable operation(${msg})`)
+
 const setOverlayMessage = (slot, msg) => {
   Events.invoke('debugoverlaymessage', { slot: slot, msg: msg })
 }
-export { DebugOverlay, overlayLog, setOverlayMessage }
+export { DebugOverlay, overlayLog, setOverlayMessage, undoableOperationLog }
