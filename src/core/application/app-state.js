@@ -1,4 +1,3 @@
-import PlatformInfo from './platform.js'
 import DrawingCanvas from './drawing-canvas.js'
 import { configUserInput } from '../user-input.js'
 import BrushTool from './brushTool'
@@ -6,7 +5,6 @@ import Color from '../gl/Color.js'
 
 import { Document } from './document'
 import { Layer, LayerType, LayerMask } from './layer.js'
-
 
 class AppState {
   constructor() {
@@ -47,7 +45,7 @@ class AppState {
       this.document.addLayer(LayerType.LAYER)
       this.document.addLayer(LayerType.LAYER)
       this.document.addLayer(LayerType.LAYER)
-      
+
       const layer2 = this.document.addLayer(LayerType.LAYER)
       layer2.clippingMask = true
       layer2.visible = false

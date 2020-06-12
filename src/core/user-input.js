@@ -1,4 +1,3 @@
-import { setOverlayMessage, overlayLog } from '../components/DebugOverlay.jsx'
 import PlatformInfo from './application/platform.js'
 
 const modifiers = {}

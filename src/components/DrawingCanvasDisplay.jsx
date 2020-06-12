@@ -100,7 +100,6 @@ class DrawingCanvasDisplay extends React.Component {
     let [x, y] = this.getAbsoluteMouseCoords(e)
     this.touchStart = { x: x, y: y }
     this.canvasPosTouchStart = { x: this.canvas.position.x, y: this.canvas.position.y }
-    // overlayLog(`touch start ${event.touches.length} ${this.touchStart.x} ${this.touchStart.y}`)
   }
 
   updateZoom(newScale, zoomPos) {
@@ -110,8 +109,6 @@ class DrawingCanvasDisplay extends React.Component {
     this.canvas.position.x += (relZoomed.x - rel.x) * this.canvas.zoom
     this.canvas.position.y += (relZoomed.y - rel.y) * this.canvas.zoom
   }
-
-
 
   updateZoom2(newScale, zoomPos) {
     const rel = this.viewportToCanvas(zoomPos.x, zoomPos.y)
@@ -142,7 +139,7 @@ class DrawingCanvasDisplay extends React.Component {
     } else {
       this.touchZoomStart = this.canvas.zoom
       this.isZooming = false;
-      this.paintTool(x, y)
+      this.invokeTool(x, y)
       this.repaint()
     }
   }
@@ -151,7 +148,7 @@ class DrawingCanvasDisplay extends React.Component {
     this.touchZoomStart = this.canvas.zoom
     this.isZooming = false;
     this.invalidateTool()
-    this.paintTool(x, y)
+    this.invokeTool(x, y)
     this.repaint()
   }
 
@@ -166,7 +163,7 @@ class DrawingCanvasDisplay extends React.Component {
     this.tool.isBeingUsed = false
   }
 
-  paintTool(x, y) {
+  invokeTool(x, y) {
     const rel = this.viewportToCanvas(x, y)
     if (!this.tool.isBeingUsed) {
       this.tool.isBeingUsed = true
@@ -183,7 +180,6 @@ class DrawingCanvasDisplay extends React.Component {
     this.mousePrevious = { x: x, y: y }
 
     const u = UserInput
-
     if (u.mouse.left === 1) {
       if (u.modifiers.Space === 1) {
         let delta = { x: x - p.x, y: y - p.y }
@@ -203,13 +199,8 @@ class DrawingCanvasDisplay extends React.Component {
           this.repaint()
         }
       } else {
-        // painting
-        this.paintTool(x, y)
-        // overlayLog('painting')
+        this.invokeTool(x, y)
         this.repaint()
-
-        // An early return so 
-        // current tool is not invalidated
         return
       }
     } else {

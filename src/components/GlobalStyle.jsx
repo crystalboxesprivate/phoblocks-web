@@ -11,11 +11,3 @@ export default createGlobalStyle`
     overflow: hidden;
   }
 `;
-/*
-
-  body{
-    touch-action: manipulation;
-    user-zoom:fixed;
-  }
-
-  */

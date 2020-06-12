@@ -4,7 +4,6 @@ import Slider from './Slider.jsx'
 import Theme from './Theme.js'
 import { Events } from '../core/events.js'
 import { overlayLog } from './DebugOverlay.jsx'
-import styled from 'styled-components'
 import Scrollbar from "react-scrollbars-custom";
 
 const Layer = ({ layer, selected, maskEditing, level }) => {
@@ -77,14 +76,8 @@ const LayersList = ({ state, container, level, style }) => (
   </ul>
 )
 
-
-const LayersListStyled = styled.div`
-  -webkit-overflow-scrolling: touch;
-  overflow-y: auto;
-  height: ${props => props.height}px;
-`;
-
 const LayersListPanel = ({ height, style, state }) => {
+  const listHeight = height - 39
   return (
     <div key='layers' style={{
       height: height,
@@ -97,25 +90,22 @@ const LayersListPanel = ({ height, style, state }) => {
         marginBottom: 9,
         ...Theme.font
       }}>Layers</h1>
-
-      {/* <Scrollbar
-        permanentTracks={false}
-        mobileNative={true}
-        // native={true}
-
-        removeTrackYWhenNotUsed={true}
-        disableTracksWidthCompensation style={{
-          height: height - 39,
-          overflowScrolling: "touch",
-          WebkitOverflowScrolling: "touch",
-        }}> */}
-      <LayersListStyled height={height - 39}>
-        <LayersList state={state} container={state.document} level={0} />
-
-      </LayersListStyled>
-      {/* </Scrollbar> */}
-
-
+      {
+        listHeight < 1 ? '' :
+          (
+            <Scrollbar
+              permanentTracks={false}
+              mobileNative={true}
+              removeTrackYWhenNotUsed={true}
+              disableTracksWidthCompensation style={{
+                height: height - 39,
+                overflowScrolling: "touch",
+                WebkitOverflowScrolling: "touch",
+              }}>
+              <LayersList state={state} container={state.document} level={0} />
+            </Scrollbar>
+          )
+      }
     </div>
   )
 }

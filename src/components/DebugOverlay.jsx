@@ -14,11 +14,11 @@ class DebugOverlay extends React.Component {
   constructor(props) {
     super(props)
     this.state = { update: false }
+    
     Events.addListener('debugoverlaylog', msg => {
       this.setState({ update: !this.state.update })
       this.log.push({ time: new Date(), msg: msg })
     })
-
 
     Events.addListener('debugoverlaymessage', msgInfo => {
       this.setState({ update: !this.state.update })

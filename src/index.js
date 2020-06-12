@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import frag from './frag.glsl'
 import WebGLCanvas from './components/WebGLCanvas.jsx'
 
 import { disableBodyScroll } from 'body-scroll-lock'
@@ -16,9 +15,6 @@ import LayersThumbnails from './components/LayersThumbnails.jsx'
 import LayersPanel from './components/LayersPanel.jsx'
 import GlobalStyle from './components/GlobalStyle.jsx'
 
-
-// disableBodyScroll(document.body)
-
 // make the canvas - render the document
 ReactDOM.render(
   <App state={new AppState()}>
@@ -28,7 +24,7 @@ ReactDOM.render(
     <Toolbar />
     <LayersToolbar />
     <LayersThumbnails />
-    <LayersPanel /> 
+    {/* <LayersPanel />  */}
     <DrawingCanvasDisplay /> 
   </App>,
   document.getElementById('main')
