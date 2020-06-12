@@ -3,10 +3,8 @@ import ReactDOM from 'react-dom'
 import frag from './frag.glsl'
 import WebGLCanvas from './components/WebGLCanvas.jsx'
 
-import {
-  disableBodyScroll,
-} from 'body-scroll-lock'
-import { DebugOverlay } from './components/DebugOverlay.jsx'
+import { disableBodyScroll } from 'body-scroll-lock'
+import { DebugOverlay,overlayLog } from './components/DebugOverlay.jsx'
 
 import App from './components/App.jsx'
 import DrawingCanvasDisplay from './components/DrawingCanvasDisplay.jsx'
@@ -18,7 +16,8 @@ import LayersThumbnails from './components/LayersThumbnails.jsx'
 import LayersPanel from './components/LayersPanel.jsx'
 import GlobalStyle from './components/GlobalStyle.jsx'
 
-disableBodyScroll(document.body)
+
+// disableBodyScroll(document.body)
 
 // make the canvas - render the document
 ReactDOM.render(
@@ -28,9 +27,10 @@ ReactDOM.render(
     <Header />
     <Toolbar />
     <LayersToolbar />
-    {/* <LayersThumbnails /> */}
-    <LayersPanel />
-    <DrawingCanvasDisplay />
+    <LayersThumbnails />
+    <LayersPanel /> 
+    <DrawingCanvasDisplay /> 
   </App>,
   document.getElementById('main')
 )
+

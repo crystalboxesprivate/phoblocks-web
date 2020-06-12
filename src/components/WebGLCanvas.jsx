@@ -37,8 +37,6 @@ class WebGLCanvas extends React.Component {
 
   render() {
     return <div style={{
-      position: 'fixed',
-      overflow: 'hidden',
       zIndex:-1
     }}>
       <canvas ref={this._canvas} id={this.props.id}

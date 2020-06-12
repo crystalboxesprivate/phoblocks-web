@@ -29,6 +29,10 @@ class DebugOverlay extends React.Component {
     })
   }
 
+  componentDidMount() {
+    setOverlayMessage(0, 'Overlay Created')
+  }
+
   getMessageLog() {
     let m = []
 
